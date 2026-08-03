@@ -7,6 +7,7 @@
     ./btop.nix
     ./cava.nix
     ./direnv.nix
+    ./fish.nix
     ./gaming.nix
     ./git.nix
     ./gnome.nix
