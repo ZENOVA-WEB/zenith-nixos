@@ -9,7 +9,7 @@
     loginShellInit = ''
       if test -z "$DISPLAY" -a -z "$WAYLAND_DISPLAY"
         if string match -q "*/tty1" (tty)
-          exec Hyprland
+          exec start-hyprland
         end
       end
     '';
