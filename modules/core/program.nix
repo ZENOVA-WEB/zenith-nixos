@@ -3,9 +3,14 @@
 {
   programs.fish = {
     enable = true;
+    interactiveShellInit = ''
+      set -g fish_greeting
+    '';
     loginShellInit = ''
-      if test -z "$DISPLAY" -a "$TTY" = "/dev/tty1"
-        exec start-hyprland >/dev/null 2>&1
+      if test -z "$DISPLAY" -a -z "$WAYLAND_DISPLAY"
+        if string match -q "*/tty1" (tty)
+          exec Hyprland
+        end
       end
     '';
   };

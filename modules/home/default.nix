@@ -19,6 +19,7 @@
     ./obsidian.nix
     ./packages/default.nix
     ./quickshell.nix
+    ./starship.nix
     ./zen.nix
     ./antigravity.nix
   ];
