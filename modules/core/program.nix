@@ -14,5 +14,7 @@
       end
     '';
   };
+  
+  environment.variables.TERMINAL = "kitty";
   programs.dconf.enable = true;
 }
