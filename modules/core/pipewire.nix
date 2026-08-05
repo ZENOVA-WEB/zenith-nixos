@@ -14,5 +14,21 @@
         "bluetooth.autoswitch-to-headset-profile" = false;
       };
     };
+
+    extraConfig.pipewire."91-null-sinks" = {
+      "context.objects" = [
+        {
+          factory = "adapter";
+          args = {
+            "factory.name" = "support.null-audio-sink";
+            "node.name" = "stream-sink";
+            "node.description" = "Stream Sink";
+            "media.class" = "Audio/Sink";
+            "object.linger" = true;
+            "audio.position" = "[ FL FR ]";
+          };
+        }
+      ];
+    };
   };
 }
