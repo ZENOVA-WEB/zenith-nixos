@@ -6,7 +6,7 @@
       commandLineArgs = "--enable-features=UseOzonePlatform --ozone-platform=wayland";
     })
     pear-desktop
-    aria2-next
+    aria2
   ];
 }
 
