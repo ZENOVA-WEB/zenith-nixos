@@ -24,6 +24,9 @@
     automake
     libtool
 
+    gemini-cli
+    pavucontrol
+
     # --- Common Native Libraries & Development Headers ---
     openssl
 
