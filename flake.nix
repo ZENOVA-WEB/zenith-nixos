@@ -23,6 +23,16 @@
 
     antigravity-nix.url = "github:jacopone/antigravity-nix";
     hermes-agent.url = "github:NousResearch/hermes-agent";
+
+    zenith-shell = {
+      url = "github:zaeemali272/zenith-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprland-dots = {
+      url = "github:zaeemali272/Hyprland-dots";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, home-manager, hermes-agent, zen-browser, antigravity-nix, ... }@inputs:

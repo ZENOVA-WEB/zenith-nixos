@@ -2,6 +2,8 @@
 
 {
   imports = [
+    inputs.zenith-shell.homeManagerModules.default
+    inputs.hyprland-dots.homeManagerModules.default
     ./bat.nix
     ./browser.nix
     ./btop.nix
@@ -12,7 +14,6 @@
     ./git.nix
     ./gnome.nix
     ./gtk.nix
-    ./hyprland/default.nix
     ./kitty.nix
     ./lazygit.nix
     ./micro.nix
@@ -31,5 +32,5 @@
 
   programs.home-manager.enable = true;
 
-  xdg.configFile."quickshell".source = config.lib.file.mkOutOfStoreSymlink "/home/${vars.user}/zenith-shell";
+  programs.hyprland-dots.enable = true;
 }
