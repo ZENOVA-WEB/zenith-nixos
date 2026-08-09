@@ -3,10 +3,9 @@
 {
   home.packages = with pkgs; [
     (element-desktop.override {
-      commandLineArgs = "--enable-features=UseOzonePlatform --ozone-platform=wayland";
+      commandLineArgs = "--ozone-platform=x11";
     })
     pear-desktop
-    aria2
   ];
 }
 

@@ -17,4 +17,14 @@
   
   environment.variables.TERMINAL = "kitty";
   programs.dconf.enable = true;
+
+  programs.nix-ld = {
+    enable = true;
+    libraries = with pkgs; [
+      # Add any common libraries binaries might look for
+      stdenv.cc.cc.lib
+      zlib
+      glib
+    ];
+  };
 }

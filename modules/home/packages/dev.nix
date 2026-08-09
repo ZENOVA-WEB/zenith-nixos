@@ -42,7 +42,6 @@
     pkg-config
     gtk4
     gtk3
-    glib
     cairo
     pango
     gdk-pixbuf
