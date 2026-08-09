@@ -2,13 +2,15 @@
 
 {
   home.packages = [
-    pkgs.materia-theme
+    (pkgs.orchis-theme.override {
+      tweaks = [ "black" ];
+    })
     pkgs.reversal-icon-theme
     pkgs.bibata-cursors
   ];
 
   home.sessionVariables = {
-    GTK_THEME = lib.mkForce "Materia-dark";
+    GTK_THEME = lib.mkForce "Orchis-Dark";
     XCURSOR_THEME = lib.mkForce "Bibata-Modern-Classic";
     XCURSOR_SIZE = lib.mkForce "24";
   };
@@ -16,8 +18,10 @@
   gtk = {
     enable = true;
     theme = {
-      name = lib.mkForce "Materia-dark";
-      package = lib.mkForce pkgs.materia-theme;
+      name = lib.mkForce "Orchis-Dark";
+      package = lib.mkForce (pkgs.orchis-theme.override {
+        tweaks = [ "black" ];
+      });
     };
     iconTheme = {
       name = lib.mkForce "Reversal-dark";
@@ -32,7 +36,7 @@
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
-      gtk-theme = "Materia-dark";
+      gtk-theme = "Orchis-Dark";
       icon-theme = "Reversal-dark";
       cursor-theme = "Bibata-Modern-Classic";
     };
