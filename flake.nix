@@ -25,12 +25,12 @@
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
     zenith-shell = {
-      url = "github:zaeemali272/zenith-shell";
+      url = "git+file:///home/zaeem/zenith/zenith-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     hyprland-dots = {
-      url = "github:zaeemali272/Hyprland-dots";
+      url = "git+file:///home/zaeem/zenith/Hyprland-dots";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
