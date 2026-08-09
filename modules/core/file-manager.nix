@@ -20,4 +20,20 @@
       <property name="last-menubar-visible" type="bool" value="false"/>
     </channel>
   '';
+
+  # Configure default TerminalEmulator for exo/thunar
+  environment.etc."xdg/xfce4/helpers.rc".text = ''
+    TerminalEmulator=kitty
+  '';
+
+  environment.etc."xdg/xfce4/helpers/kitty.desktop".text = ''
+    [Desktop Entry]
+    Version=1.0
+    Icon=kitty
+    Name=Kitty Terminal Emulator
+    Type=X-XFCE-Helper
+    X-XFCE-Category=TerminalEmulator
+    X-XFCE-Commands=kitty
+    X-XFCE-CommandsWithParameter=kitty --directory="%s"
+  '';
 }
