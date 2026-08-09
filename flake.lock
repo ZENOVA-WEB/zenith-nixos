@@ -245,11 +245,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786282975,
-        "narHash": "sha256-nyplyPZ2Z3v9opmDQN0XhN4+FJsFGIN72gQZXTw+BhI=",
+        "lastModified": 1786288820,
+        "narHash": "sha256-4yMJuMm9mZnvB5NydiNs9OeOkpPz8EXA3Bdarq/XDZ4=",
         "ref": "refs/heads/main",
-        "rev": "91f64752e08eef65cdc0811d3ff40b6118af1790",
-        "revCount": 55,
+        "rev": "4147662914de1020c241d07a3c72f03dc01eebe6",
+        "revCount": 58,
         "type": "git",
         "url": "file:///home/zaeem/zenith/Hyprland-dots"
       },
