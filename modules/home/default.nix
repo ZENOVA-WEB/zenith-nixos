@@ -31,5 +31,10 @@
 
   programs.home-manager.enable = true;
 
-  programs.hyprland-dots.enable = true;
+  programs.hyprland-dots = {
+    enable = true;
+    devMode = true;
+    devPath = "/home/${vars.user}/zenith/Hyprland-dots";
+  };
 }
+
