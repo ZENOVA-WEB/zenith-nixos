@@ -1,13 +1,12 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, config, vars, ... }:
 
 {
   programs.quickshell = {
     enable = true;
-    # Explicitly link it to your flake input version
     package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default;
   };
 
-  programs.zenith-shell = {
-    enable = true;
-  };
+  # Real-time out-of-store live development symlinks
+  xdg.configFile."quickshell".source = config.lib.file.mkOutOfStoreSymlink "/home/${vars.user}/zenith/zenith-shell";
+  xdg.configFile."hypr".source = config.lib.file.mkOutOfStoreSymlink "/home/${vars.user}/zenith/Hyprland-dots";
 }
