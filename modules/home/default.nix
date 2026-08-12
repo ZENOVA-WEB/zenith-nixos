@@ -5,6 +5,7 @@
     inputs.zenith-shell.homeManagerModules.default
     inputs.hyprland-dots.homeManagerModules.default
     ./bat.nix
+    ./browser.nix
     ./btop.nix
     ./cava.nix
     ./direnv.nix
