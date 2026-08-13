@@ -8,8 +8,6 @@
     tree
     fastfetch
     btop
-    nnn
-    eza
-    zoxide    
+    yazi
   ];
 }

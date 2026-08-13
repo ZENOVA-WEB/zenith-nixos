@@ -17,5 +17,6 @@
     libappindicator-gtk3
     motrix-next
     aria2
+    matugen
   ]; 
 }

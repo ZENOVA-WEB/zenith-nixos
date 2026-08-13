@@ -1,1 +1,6 @@
-{ pkgs, ... }: { home.packages = with pkgs; [ nil nixfmt ]; }
+{ pkgs, ... }: {
+  home.packages = with pkgs; [
+    nil
+    nixfmt
+  ];
+}
