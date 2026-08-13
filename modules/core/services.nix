@@ -24,14 +24,15 @@
         # 1. Sync Hyprland-dots
         HYPR_DIR="$CONFIG_DIR/hypr"
         if [ -L "$HYPR_DIR" ]; then
-          rm -rf "$HYPR_DIR"
+          rm -f "$HYPR_DIR"
         fi
-        if [ ! -d "$HYPR_DIR" ]; then
-          $GIT clone "https://github.com/zaeemali272/Hyprland-dots.git" "$HYPR_DIR"
-        else
-          if [ -d "$HYPR_DIR/.git" ]; then
-            $GIT -C "$HYPR_DIR" pull --ff-only 2>/dev/null || true
+        if [ ! -d "$HYPR_DIR" ] || [ ! -d "$HYPR_DIR/.git" ]; then
+          if [ -d "$HYPR_DIR" ] && [ ! -d "$HYPR_DIR/.git" ]; then
+            rm -rf "$HYPR_DIR"
           fi
+          $GIT clone "https://github.com/zaeemali272/Hyprland-dots.git" "$HYPR_DIR" || true
+        else
+          $GIT -C "$HYPR_DIR" pull --ff-only 2>/dev/null || true
         fi
         if [ -d "$HYPR_DIR" ]; then
           $FIND "$HYPR_DIR" -type f \( -name "*.sh" -o -name "*.py" \) -exec $CHMOD +x {} + 2>/dev/null || true
@@ -40,14 +41,15 @@
         # 2. Sync zenith-shell
         QUICKSHELL_DIR="$CONFIG_DIR/quickshell"
         if [ -L "$QUICKSHELL_DIR" ]; then
-          rm -rf "$QUICKSHELL_DIR"
+          rm -f "$QUICKSHELL_DIR"
         fi
-        if [ ! -d "$QUICKSHELL_DIR" ]; then
-          $GIT clone "https://github.com/zaeemali272/zenith-shell.git" "$QUICKSHELL_DIR"
-        else
-          if [ -d "$QUICKSHELL_DIR/.git" ]; then
-            $GIT -C "$QUICKSHELL_DIR" pull --ff-only 2>/dev/null || true
+        if [ ! -d "$QUICKSHELL_DIR" ] || [ ! -d "$QUICKSHELL_DIR/.git" ]; then
+          if [ -d "$QUICKSHELL_DIR" ] && [ ! -d "$QUICKSHELL_DIR/.git" ]; then
+            rm -rf "$QUICKSHELL_DIR"
           fi
+          $GIT clone "https://github.com/zaeemali272/zenith-shell.git" "$QUICKSHELL_DIR" || true
+        else
+          $GIT -C "$QUICKSHELL_DIR" pull --ff-only 2>/dev/null || true
         fi
         if [ -d "$QUICKSHELL_DIR" ]; then
           $FIND "$QUICKSHELL_DIR" -type f \( -name "*.sh" -o -name "*.py" \) -exec $CHMOD +x {} + 2>/dev/null || true
