@@ -38,7 +38,7 @@
   outputs = { self, nixpkgs, home-manager, hermes-agent, zen-browser, antigravity-nix, ... }@inputs:
     let
       vars = import ./vars.nix;
-    in {
+    in rec {
       nixosConfigurations = {
         desktop = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -55,6 +55,7 @@
             }
           ];
         };
+        "${vars.hostname}" = nixosConfigurations.desktop;
       };
     };
 }
