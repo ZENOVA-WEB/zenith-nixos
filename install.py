@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env nix-shell
+#!nix-shell -i python3 -p python3
 import os
 import sys
 import re
@@ -20,13 +21,11 @@ def get_timezones():
     for root, dirs, files in os.walk(base_path):
         for file in files:
             full_path = os.path.join(root, file)
-            # Skip symlinks and special files/dirs
             if os.path.islink(full_path):
                 continue
             rel_path = os.path.relpath(full_path, base_path)
             parts = rel_path.split('/')
             
-            # Exclude non-timezone metadata directories
             if any(p in ['posix', 'right', 'SystemV', 'Etc', 'US'] for p in parts):
                 continue
                 
@@ -47,7 +46,6 @@ def input_with_autocomplete(prompt, default="", suggestions=None):
     try:
         tty.setraw(fd)
         while True:
-            # Find the best match
             match = ""
             if buffer:
                 for s in suggestions:
@@ -55,10 +53,8 @@ def input_with_autocomplete(prompt, default="", suggestions=None):
                         match = s
                         break
             
-            # Clear line and print prompt + current buffer
             sys.stdout.write("\r\033[K" + prompt + buffer)
             
-            # Draw autocompleted suggestion in dim grey
             if match and len(match) > len(buffer):
                 suggestion_suffix = match[len(buffer):]
                 sys.stdout.write("\033[90m" + suggestion_suffix + "\033[0m")
@@ -69,7 +65,6 @@ def input_with_autocomplete(prompt, default="", suggestions=None):
                 
             sys.stdout.flush()
             
-            # Read 1 byte
             ch = sys.stdin.read(1)
             
             if ch in ('\r', '\n'):
@@ -87,11 +82,10 @@ def input_with_autocomplete(prompt, default="", suggestions=None):
                 if match:
                     buffer = match
             elif ch == '\x1b':
-                # Handle arrow keys
                 next1 = sys.stdin.read(1)
                 next2 = sys.stdin.read(1)
                 if next1 == '[':
-                    if next2 == 'C':  # Right Arrow
+                    if next2 == 'C':
                         if match:
                             buffer = match
             elif ord(ch) >= 32 and ord(ch) <= 126:
@@ -106,11 +100,10 @@ def main():
     print("\n[1/3] Generating NixOS hardware configuration...")
     hardware_path = "hosts/desktop/hardware-configuration.nix"
     try:
-        # Run nixos-generate-config --show-hardware-config
+        # Run nixos-generate-config --show-hardware-config to read hardware configuration
         cmd = ["sudo", "nixos-generate-config", "--show-hardware-config"]
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         
-        # Ensure hosts/desktop directory exists
         os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
         with open(hardware_path, "w") as f:
             f.write(result.stdout)
@@ -123,8 +116,6 @@ def main():
     print("\n[2/3] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")
     
     timezones = get_timezones()
-    
-    # Define suggestions for fields
     gpus = ["intel", "amd", "nvidia"]
     locales = ["en_US.UTF-8", "en_GB.UTF-8", "de_DE.UTF-8", "fr_FR.UTF-8"]
     layouts = ["us", "uk", "fr", "de", "es"]
@@ -148,7 +139,6 @@ def main():
     with open(vars_path, "r") as f:
         content = f.read()
         
-    # Replace the values using regex
     replacements = {
         "user": user,
         "fullName": fullName,
@@ -161,7 +151,6 @@ def main():
     }
     
     for var, val in replacements.items():
-        # Match pattern: varName = "value";
         pattern = re.compile(rf'({var}\s*=\s*")[^"]*(";)')
         content = pattern.sub(rf'\g<1>{val}\g<2>', content)
         
