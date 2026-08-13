@@ -9,7 +9,7 @@
   # Disable Home Manager hyprland.conf generator to prevent collision with out-of-store hypr directory link
   wayland.windowManager.hyprland.enable = lib.mkForce false;
 
-  # Real-time out-of-store live development symlinks with flake input fallback
+  # Live out-of-store development symlinks for your local repo, while remaining editable for others
   xdg.configFile."quickshell".source = lib.mkForce (
     if builtins.pathExists "/home/${vars.user}/zenith/zenith-shell"
     then (config.lib.file.mkOutOfStoreSymlink "/home/${vars.user}/zenith/zenith-shell")
