@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -e
 
+# Handle Ctrl+C (SIGINT) cleanly
+trap 'echo -e "\n\n⚠️  Installation aborted by user (Ctrl+C). Exiting cleanly..."; exit 1' INT
+
+echo "=================================================="
+echo "   Zenith NixOS Installer Script"
+echo "   (Press Ctrl + C at any time to force quit)"
+echo "=================================================="
+echo ""
+
 # Safety Check 1: Auto-detect active non-root username
 REAL_USER="${SUDO_USER:-$USER}"
 if [ -n "$REAL_USER" ] && [ "$REAL_USER" != "root" ]; then
