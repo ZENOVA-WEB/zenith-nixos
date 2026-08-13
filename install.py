@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p python3 whois openssl
+#!nix-shell -i python3 -p python3 whois openssl git
 import os
 import sys
 import re
@@ -9,7 +9,6 @@ import termios
 import tty
 
 def generate_sha512_hash(password):
-    # Try openssl passwd -6
     try:
         res = subprocess.run(["openssl", "passwd", "-6", password], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         if res.stdout.strip():
@@ -17,7 +16,6 @@ def generate_sha512_hash(password):
     except Exception:
         pass
     
-    # Try mkpasswd -m sha-512
     try:
         res = subprocess.run(["mkpasswd", "-m", "sha-512", password], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         if res.stdout.strip():
@@ -25,7 +23,6 @@ def generate_sha512_hash(password):
     except Exception:
         pass
 
-    # Try standard crypt module
     try:
         import crypt
         return crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
@@ -120,98 +117,139 @@ def input_with_autocomplete(prompt, default="", suggestions=None):
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
+def get_user_from_vars():
+    vars_path = "vars.nix"
+    if os.path.exists(vars_path):
+        with open(vars_path, "r") as f:
+            content = f.read()
+        match = re.search(r'user\s*=\s*"([^"]*)";', content)
+        if match:
+            return match.group(1)
+    return "zaeem"
+
+def sync_repo(target_dir, repo_url):
+    repo_name = os.path.basename(target_dir)
+    if not os.path.exists(target_dir):
+        print(f"Cloning {repo_name} into {target_dir}...")
+        try:
+            subprocess.run(["git", "clone", repo_url, target_dir], check=True)
+            print(f"✓ Cloned {repo_name} successfully.")
+        except Exception as e:
+            print(f"⚠️  Failed to clone {repo_name}: {e}")
+    else:
+        print(f"Updating {repo_name} in {target_dir} via git pull...")
+        try:
+            subprocess.run(["git", "-C", target_dir, "pull"], check=True)
+            print(f"✓ Updated {repo_name} successfully.")
+        except Exception as e:
+            print(f"⚠️  Failed to pull {repo_name}: {e}")
+
 def main():
     print("=== Zenith NixOS Installer Configuration ===")
     
-    # 1. Hardware Configuration Generation
-    print("\n[1/4] Generating NixOS hardware configuration...")
-    hardware_path = "hosts/desktop/hardware-configuration.nix"
-    try:
-        is_root = (os.geteuid() == 0)
-        cmd = ["nixos-generate-config", "--show-hardware-config"] if is_root else ["sudo", "nixos-generate-config", "--show-hardware-config"]
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        
-        os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
-        with open(hardware_path, "w") as f:
-            f.write(result.stdout)
-        print(f"✓ Replaced {hardware_path} with generated configuration.")
-    except Exception as e:
-        print(f"⚠️  Could not generate hardware configuration: {e}")
-        print("Continuing with existing hardware-configuration.nix...")
-
-    # 2. Variable Gathering
-    print("\n[2/4] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")
+    setup_vars = input_with_autocomplete("Do you want to setup/modify user and system variables? (y/N): ", default="n", suggestions=["y", "n", "yes", "no"])
     
-    timezones = get_timezones()
-    gpus = ["intel", "amd", "nvidia"]
-    locales = ["en_US.UTF-8", "en_GB.UTF-8", "de_DE.UTF-8", "fr_FR.UTF-8"]
-    layouts = ["us", "uk", "fr", "de", "es"]
-    
-    user = input_with_autocomplete("Username: ", default="zaeem")
-    fullName = input_with_autocomplete("Full Name: ", default="zaeem")
-    email = input_with_autocomplete("Email: ", default="zaeemali272@gmail.com")
-    hostname = input_with_autocomplete("Hostname: ", default="V14")
-    timeZone = input_with_autocomplete("Timezone/Country/City: ", default="Asia/Karachi", suggestions=timezones)
-    locale = input_with_autocomplete("Locale: ", default="en_US.UTF-8", suggestions=locales)
-    keyboardLayout = input_with_autocomplete("Keyboard Layout: ", default="us", suggestions=layouts)
-    gpu = input_with_autocomplete("GPU (intel/amd/nvidia): ", default="intel", suggestions=gpus)
-    
-    # Password Prompt
-    password = ""
-    while not password:
-        password = getpass.getpass("Enter password for user account: ")
-        if not password:
-            print("Password cannot be empty!")
+    if setup_vars.lower() in ["y", "yes"]:
+        # 1. Hardware Configuration Generation
+        print("\n[1/4] Generating NixOS hardware configuration...")
+        hardware_path = "hosts/desktop/hardware-configuration.nix"
+        try:
+            is_root = (os.geteuid() == 0)
+            cmd = ["nixos-generate-config", "--show-hardware-config"] if is_root else ["sudo", "nixos-generate-config", "--show-hardware-config"]
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
             
-    print("Hashing password (SHA-512)...")
-    password_hash = generate_sha512_hash(password)
-    
-    # 3. Replacing variables in vars.nix
-    print("\n[3/4] Updating vars.nix...")
-    vars_path = "vars.nix"
-    if not os.path.exists(vars_path):
-        print(f"❌ Error: {vars_path} not found!")
-        sys.exit(1)
-        
-    with open(vars_path, "r") as f:
-        content = f.read()
-        
-    replacements = {
-        "user": user,
-        "fullName": fullName,
-        "email": email,
-        "hostname": hostname,
-        "timeZone": timeZone,
-        "locale": locale,
-        "keyboardLayout": keyboardLayout,
-        "gpu": gpu
-    }
-    
-    for var, val in replacements.items():
-        pattern = re.compile(rf'({var}\s*=\s*")[^"]*(";)')
-        content = pattern.sub(rf'\g<1>{val}\g<2>', content)
-        
-    with open(vars_path, "w") as f:
-        f.write(content)
-    print("✓ Successfully updated vars.nix!")
+            os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
+            with open(hardware_path, "w") as f:
+                f.write(result.stdout)
+            print(f"✓ Replaced {hardware_path} with generated configuration.")
+        except Exception as e:
+            print(f"⚠️  Could not generate hardware configuration: {e}")
+            print("Continuing with existing hardware-configuration.nix...")
 
-    # 4. Updating hashedPassword in modules/core/user.nix
-    print("\n[4/4] Updating user.nix with hashed password...")
-    user_nix_path = "modules/core/user.nix"
-    if os.path.exists(user_nix_path):
-        with open(user_nix_path, "r") as f:
-            user_content = f.read()
-            
-        pattern = re.compile(r'(hashedPassword\s*=\s*")[^"]*(";)')
-        user_content = pattern.sub(rf'\g<1>{password_hash}\g<2>', user_content)
+        # 2. Variable Gathering
+        print("\n[2/4] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")
         
-        with open(user_nix_path, "w") as f:
-            f.write(user_content)
-        print("✓ Successfully updated hashedPassword in modules/core/user.nix!")
+        timezones = get_timezones()
+        gpus = ["intel", "amd", "nvidia"]
+        locales = ["en_US.UTF-8", "en_GB.UTF-8", "de_DE.UTF-8", "fr_FR.UTF-8"]
+        layouts = ["us", "uk", "fr", "de", "es"]
+        
+        user = input_with_autocomplete("Username: ", default="zaeem")
+        fullName = input_with_autocomplete("Full Name: ", default="zaeem")
+        email = input_with_autocomplete("Email: ", default="zaeemali272@gmail.com")
+        hostname = input_with_autocomplete("Hostname: ", default="V14")
+        timeZone = input_with_autocomplete("Timezone/Country/City: ", default="Asia/Karachi", suggestions=timezones)
+        locale = input_with_autocomplete("Locale: ", default="en_US.UTF-8", suggestions=locales)
+        keyboardLayout = input_with_autocomplete("Keyboard Layout: ", default="us", suggestions=layouts)
+        gpu = input_with_autocomplete("GPU (intel/amd/nvidia): ", default="intel", suggestions=gpus)
+        
+        # Password Prompt
+        password = ""
+        while not password:
+            password = getpass.getpass("Enter password for user account: ")
+            if not password:
+                print("Password cannot be empty!")
+                
+        print("Hashing password (SHA-512)...")
+        password_hash = generate_sha512_hash(password)
+        
+        # 3. Replacing variables in vars.nix
+        print("\n[3/4] Updating vars.nix...")
+        vars_path = "vars.nix"
+        if not os.path.exists(vars_path):
+            print(f"❌ Error: {vars_path} not found!")
+            sys.exit(1)
+            
+        with open(vars_path, "r") as f:
+            content = f.read()
+            
+        replacements = {
+            "user": user,
+            "fullName": fullName,
+            "email": email,
+            "hostname": hostname,
+            "timeZone": timeZone,
+            "locale": locale,
+            "keyboardLayout": keyboardLayout,
+            "gpu": gpu
+        }
+        
+        for var, val in replacements.items():
+            pattern = re.compile(rf'({var}\s*=\s*")[^"]*(";)')
+            content = pattern.sub(rf'\g<1>{val}\g<2>', content)
+            
+        with open(vars_path, "w") as f:
+            f.write(content)
+        print("✓ Successfully updated vars.nix!")
+
+        # 4. Updating hashedPassword in modules/core/user.nix
+        print("\n[4/4] Updating user.nix with hashed password...")
+        user_nix_path = "modules/core/user.nix"
+        if os.path.exists(user_nix_path):
+            with open(user_nix_path, "r") as f:
+                user_content = f.read()
+                
+            pattern = re.compile(r'(hashedPassword\s*=\s*")[^"]*(";)')
+            user_content = pattern.sub(rf'\g<1>{password_hash}\g<2>', user_content)
+            
+            with open(user_nix_path, "w") as f:
+                f.write(user_content)
+            print("✓ Successfully updated hashedPassword in modules/core/user.nix!")
+        else:
+            print(f"⚠️  Warning: {user_nix_path} not found!")
     else:
-        print(f"⚠️  Warning: {user_nix_path} not found!")
+        print("\nSkipping user and system variables setup.")
+        user = get_user_from_vars()
 
-    print("\nSetup complete. You can now build/switch configuration using install.sh.")
+    # Synchronize repositories (clone if absent, git pull if present)
+    print(f"\nSynchronizing dotfiles and shell repositories for user '{user}'...")
+    user_zenith_dir = f"/home/{user}/zenith"
+    os.makedirs(user_zenith_dir, exist_ok=True)
+
+    sync_repo(os.path.join(user_zenith_dir, "zenith-shell"), "https://github.com/zaeemali272/zenith-shell.git")
+    sync_repo(os.path.join(user_zenith_dir, "Hyprland-dots"), "https://github.com/zaeemali272/Hyprland-dots.git")
+
+    print("\nSetup complete. Ready to proceed with build/switch.")
 
 if __name__ == "__main__":
     main()
