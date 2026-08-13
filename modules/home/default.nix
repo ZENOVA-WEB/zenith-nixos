@@ -33,6 +33,7 @@
   programs.home-manager.enable = true;
 
   programs.hyprland-dots.enable = true;
+  programs.zenith-shell.enable = true;
 }
 
 
