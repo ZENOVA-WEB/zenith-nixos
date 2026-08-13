@@ -249,6 +249,21 @@ def main():
     sync_repo(os.path.join(user_zenith_dir, "zenith-shell"), "https://github.com/zaeemali272/zenith-shell.git")
     sync_repo(os.path.join(user_zenith_dir, "Hyprland-dots"), "https://github.com/zaeemali272/Hyprland-dots.git")
 
+    # Ensure ~/.config symlinks point to the writable cloned repos
+    config_dir = f"/home/{user}/.config"
+    os.makedirs(config_dir, exist_ok=True)
+
+    hypr_link = os.path.join(config_dir, "hypr")
+    quickshell_link = os.path.join(config_dir, "quickshell")
+
+    if not os.path.exists(hypr_link) and not os.path.islink(hypr_link):
+        os.symlink(os.path.join(user_zenith_dir, "Hyprland-dots"), hypr_link)
+        print("✓ Created symlink ~/.config/hypr -> ~/zenith/Hyprland-dots")
+
+    if not os.path.exists(quickshell_link) and not os.path.islink(quickshell_link):
+        os.symlink(os.path.join(user_zenith_dir, "zenith-shell"), quickshell_link)
+        print("✓ Created symlink ~/.config/quickshell -> ~/zenith/zenith-shell")
+
     print("\nSetup complete. Ready to proceed with build/switch.")
 
 if __name__ == "__main__":
