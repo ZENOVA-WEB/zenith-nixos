@@ -7,7 +7,6 @@
     ./bat.nix
     ./browser.nix
     ./btop.nix
-    ./cava.nix
     ./direnv.nix
     ./fish.nix
     ./gaming.nix
@@ -16,7 +15,6 @@
     ./gtk.nix
     ./kitty.nix
     ./lazygit.nix
-    ./micro.nix
     ./theme.nix
     ./obsidian.nix
     ./packages/default.nix

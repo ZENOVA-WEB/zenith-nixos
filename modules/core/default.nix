@@ -4,6 +4,7 @@
   imports = [
     ./bluetooth.nix
     ./bootloader.nix
+    ./clean.nix
     ./file-manager.nix
     ./fonts.nix
     ./hardware.nix
@@ -11,7 +12,6 @@
     ./network.nix
     ./nh.nix
     ./nixpkgs.nix
-    ./piper.nix
     ./pipewire.nix
     ./program.nix
     ./security.nix

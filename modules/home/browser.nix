@@ -1,7 +1,9 @@
 { pkgs, ... }:
 
 {
-  programs.firefox.enable = false;
+  programs.brave = {
+    enable = true;
+  };
 
   # Browser flags to fix Intel Iris Xe / Wayland WebGL and video hardware acceleration bugs
   xdg.configFile."chromium-flags.conf".text = ''

@@ -6,7 +6,6 @@
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = true;
       substituters = [
         "https://cache.nixos.org"
         "https://hyprland.cachix.org"
