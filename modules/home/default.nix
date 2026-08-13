@@ -34,6 +34,12 @@
 
   programs.hyprland-dots.enable = true;
   programs.zenith-shell.enable = true;
+
+  xdg.configFile."hypr/xdph.conf".text = ''
+    screencopy {
+        allow_token_by_default = true
+    }
+  '';
 }
 
 
