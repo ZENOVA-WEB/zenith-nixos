@@ -9,7 +9,8 @@
   # Disable Home Manager hyprland.conf generator to prevent collision with out-of-store hypr directory link
   wayland.windowManager.hyprland.enable = lib.mkForce false;
 
-  # Live out-of-store development symlinks for your local repo, while remaining editable for others
+  # Live out-of-store development symlinks pointing to local cloned repos.
+  # This prevents NixOS from overriding or locking local user configuration files into read-only Nix store paths.
   xdg.configFile."quickshell".source = lib.mkForce (
     if builtins.pathExists "/home/${vars.user}/zenith/zenith-shell"
     then (config.lib.file.mkOutOfStoreSymlink "/home/${vars.user}/zenith/zenith-shell")
