@@ -5,6 +5,9 @@ set -e
 
 read -p "Do you want to run nixos-rebuild switch now? (y/N): " choice
 if [[ "$choice" =~ ^[Yy]$ ]]; then
-    sudo nixos-rebuild switch --flake .#desktop
+    if [ "$(id -u)" -eq 0 ]; then
+        nixos-rebuild switch --flake .#desktop
+    else
+        sudo nixos-rebuild switch --flake .#desktop
+    fi
 fi
-

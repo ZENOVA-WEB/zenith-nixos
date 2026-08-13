@@ -1,11 +1,38 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p python3
+#!nix-shell -i python3 -p python3 whois openssl
 import os
 import sys
 import re
+import getpass
 import subprocess
 import termios
 import tty
+
+def generate_sha512_hash(password):
+    # Try openssl passwd -6
+    try:
+        res = subprocess.run(["openssl", "passwd", "-6", password], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        if res.stdout.strip():
+            return res.stdout.strip()
+    except Exception:
+        pass
+    
+    # Try mkpasswd -m sha-512
+    try:
+        res = subprocess.run(["mkpasswd", "-m", "sha-512", password], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        if res.stdout.strip():
+            return res.stdout.strip()
+    except Exception:
+        pass
+
+    # Try standard crypt module
+    try:
+        import crypt
+        return crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
+    except Exception:
+        pass
+
+    raise RuntimeError("Could not find a tool (openssl/mkpasswd/crypt) to hash the password!")
 
 def get_timezones():
     zones = []
@@ -97,11 +124,11 @@ def main():
     print("=== Zenith NixOS Installer Configuration ===")
     
     # 1. Hardware Configuration Generation
-    print("\n[1/3] Generating NixOS hardware configuration...")
+    print("\n[1/4] Generating NixOS hardware configuration...")
     hardware_path = "hosts/desktop/hardware-configuration.nix"
     try:
-        # Run nixos-generate-config --show-hardware-config to read hardware configuration
-        cmd = ["sudo", "nixos-generate-config", "--show-hardware-config"]
+        is_root = (os.geteuid() == 0)
+        cmd = ["nixos-generate-config", "--show-hardware-config"] if is_root else ["sudo", "nixos-generate-config", "--show-hardware-config"]
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
         
         os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
@@ -113,7 +140,7 @@ def main():
         print("Continuing with existing hardware-configuration.nix...")
 
     # 2. Variable Gathering
-    print("\n[2/3] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")
+    print("\n[2/4] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")
     
     timezones = get_timezones()
     gpus = ["intel", "amd", "nvidia"]
@@ -129,8 +156,18 @@ def main():
     keyboardLayout = input_with_autocomplete("Keyboard Layout: ", default="us", suggestions=layouts)
     gpu = input_with_autocomplete("GPU (intel/amd/nvidia): ", default="intel", suggestions=gpus)
     
+    # Password Prompt
+    password = ""
+    while not password:
+        password = getpass.getpass("Enter password for user account: ")
+        if not password:
+            print("Password cannot be empty!")
+            
+    print("Hashing password (SHA-512)...")
+    password_hash = generate_sha512_hash(password)
+    
     # 3. Replacing variables in vars.nix
-    print("\n[3/3] Updating vars.nix...")
+    print("\n[3/4] Updating vars.nix...")
     vars_path = "vars.nix"
     if not os.path.exists(vars_path):
         print(f"❌ Error: {vars_path} not found!")
@@ -156,8 +193,24 @@ def main():
         
     with open(vars_path, "w") as f:
         f.write(content)
-        
     print("✓ Successfully updated vars.nix!")
+
+    # 4. Updating hashedPassword in modules/core/user.nix
+    print("\n[4/4] Updating user.nix with hashed password...")
+    user_nix_path = "modules/core/user.nix"
+    if os.path.exists(user_nix_path):
+        with open(user_nix_path, "r") as f:
+            user_content = f.read()
+            
+        pattern = re.compile(r'(hashedPassword\s*=\s*")[^"]*(";)')
+        user_content = pattern.sub(rf'\g<1>{password_hash}\g<2>', user_content)
+        
+        with open(user_nix_path, "w") as f:
+            f.write(user_content)
+        print("✓ Successfully updated hashedPassword in modules/core/user.nix!")
+    else:
+        print(f"⚠️  Warning: {user_nix_path} not found!")
+
     print("\nSetup complete. You can now build/switch configuration using install.sh.")
 
 if __name__ == "__main__":
