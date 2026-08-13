@@ -13,6 +13,17 @@
     ];
   };
 
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+
+  boot.kernel.sysctl = {
+    "vm.swappiness" = 10;
+    "vm.vfs_cache_pressure" = 50;
+  };
+
   environment.sessionVariables = lib.mkIf (vars.gpu == "intel") {
     LIBVA_DRIVER_NAME = "iHD";
   };
