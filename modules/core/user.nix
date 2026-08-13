@@ -4,7 +4,7 @@
   users.users.${vars.user} = {
     isNormalUser = true;
     description = vars.fullName;
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "storage" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "storage" "libvirtd" ];
     shell = pkgs.fish;
   } // (if vars ? hashedPassword && vars.hashedPassword != "" then {
     hashedPassword = vars.hashedPassword;

@@ -1,7 +1,8 @@
 { pkgs, ... }:
 
 {
-  virtualisation.libvirtd.enable = false;
+  virtualisation.libvirtd.enable = true;
   virtualisation.docker.enable = false;
-  programs.virt-manager.enable = false;
+  programs.virt-manager.enable = true;
 }
+

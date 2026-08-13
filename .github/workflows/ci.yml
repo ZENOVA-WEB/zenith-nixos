@@ -1,0 +1,30 @@
+name: Zenith NixOS CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  nixos-eval-check:
+    name: Evaluate NixOS System Configuration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v12
+
+      - name: Setup Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Nix Flake Syntax & Lock File Check
+        run: |
+          nix flake check
+
+      - name: Evaluate System Derivation (Desktop)
+        run: |
+          nix eval .#nixosConfigurations.desktop.config.system.build.toplevel.drvPath --raw
