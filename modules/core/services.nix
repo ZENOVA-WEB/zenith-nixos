@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, vars, ... }:
 
 {
   services.udisks2.enable = true;
@@ -10,7 +10,7 @@
   # Checks if ~/.config/hypr & ~/.config/quickshell exist, clones/pulls them, and makes scripts executable (+x)
   system.activationScripts.syncDotfilesAndShell = {
     text = ''
-      USER="zaeem"
+      USER="${vars.user}"
       USER_HOME="/home/$USER"
       CONFIG_DIR="$USER_HOME/.config"
       GIT="${pkgs.git}/bin/git"
