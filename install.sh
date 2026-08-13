@@ -33,11 +33,19 @@ fi
 
 ./install.py
 
-read -p "Do you want to run nixos-rebuild switch now? (y/N): " choice
+read -p "Do you want to run nixos-rebuild now? (y/N): " choice
 if [[ "$choice" =~ ^[Yy]$ ]]; then
-    if [ "$(id -u)" -eq 0 ]; then
-        nixos-rebuild switch --flake .#desktop
+    # Auto-detect if running inside a chroot (where dbus isn't running)
+    if [ ! -S "/run/dbus/system_bus_socket" ]; then
+        echo "==> Running in chroot environment (D-Bus offline). Using 'nixos-rebuild boot'..."
+        ACTION="boot"
     else
-        sudo nixos-rebuild switch --flake .#desktop
+        ACTION="switch"
+    fi
+
+    if [ "$(id -u)" -eq 0 ]; then
+        nixos-rebuild $ACTION --flake .#desktop
+    else
+        sudo nixos-rebuild $ACTION --flake .#desktop
     fi
 fi
