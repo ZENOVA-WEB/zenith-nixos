@@ -151,20 +151,29 @@ def main():
     
     if setup_vars.lower() in ["y", "yes"]:
         # 1. Hardware Configuration Generation
-        print("\n[1/4] Generating NixOS hardware configuration...")
+        print("\n[1/4] Detecting & Generating NixOS hardware configuration...")
         hardware_path = "hosts/desktop/hardware-configuration.nix"
-        try:
-            is_root = (os.geteuid() == 0)
-            cmd = ["nixos-generate-config", "--show-hardware-config"] if is_root else ["sudo", "nixos-generate-config", "--show-hardware-config"]
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            
-            os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
-            with open(hardware_path, "w") as f:
-                f.write(result.stdout)
-            print(f"✓ Replaced {hardware_path} with generated configuration.")
-        except Exception as e:
-            print(f"⚠️  Could not generate hardware configuration: {e}")
-            print("Continuing with existing hardware-configuration.nix...")
+        os.makedirs(os.path.dirname(hardware_path), exist_ok=True)
+        
+        system_hw_config = "/etc/nixos/hardware-configuration.nix"
+        if os.path.exists(system_hw_config):
+            try:
+                with open(system_hw_config, "r") as src, open(hardware_path, "w") as dst:
+                    dst.write(src.read())
+                print(f"✓ Automatically imported active system hardware config from {system_hw_config}")
+            except Exception as e:
+                print(f"⚠️ Could not copy system hardware config: {e}")
+        else:
+            try:
+                is_root = (os.geteuid() == 0)
+                cmd = ["nixos-generate-config", "--show-hardware-config"] if is_root else ["sudo", "nixos-generate-config", "--show-hardware-config"]
+                result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+                with open(hardware_path, "w") as f:
+                    f.write(result.stdout)
+                print(f"✓ Generated fresh hardware configuration for this machine at {hardware_path}.")
+            except Exception as e:
+                print(f"⚠️  Could not generate hardware configuration: {e}")
+                print("Continuing with existing hardware-configuration.nix...")
 
         # 2. Variable Gathering
         print("\n[2/4] Please enter the installation variables (Press Tab or Right Arrow to autocomplete suggestions/defaults):")

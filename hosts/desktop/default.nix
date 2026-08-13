@@ -2,9 +2,11 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
+    (if builtins.pathExists "/etc/nixos/hardware-configuration.nix"
+     then /etc/nixos/hardware-configuration.nix
+     else ./hardware-configuration.nix)
     ../../modules/core
   ];
 
-  networking.hostName = "desktop";
+  networking.hostName = vars.hostname;
 }

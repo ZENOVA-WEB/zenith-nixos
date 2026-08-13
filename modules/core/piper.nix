@@ -1,5 +1,5 @@
 { pkgs, ... }:
 
 {
-  services.ratbagd.enable = true;
+  services.ratbagd.enable = false;
 }
