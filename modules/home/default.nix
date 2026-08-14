@@ -22,6 +22,7 @@
     ./starship.nix
     ./zen.nix
     ./antigravity.nix
+    ./code-cursor.nix
   ];
 
   home.username = vars.user;

@@ -22,6 +22,7 @@
     };
 
     antigravity-nix.url = "github:jacopone/antigravity-nix";
+    code-cursor-nix.url = "github:jacopone/code-cursor-nix";
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
     zenith-shell = {

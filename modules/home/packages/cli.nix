@@ -9,5 +9,7 @@
     fastfetch
     btop
     yazi
+    github-cli
+    claude-code
   ];
 }
